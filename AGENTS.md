@@ -9,12 +9,19 @@ The Laravel Boost guidelines are specifically curated by Laravel maintainers for
 This application is a Laravel application and its main Laravel ecosystems package & versions are below. You are an expert with them all. Ensure you abide by these specific packages & versions.
 
 - php - 8.4.16
+- laravel/fortify (FORTIFY) - v1
 - laravel/framework (LARAVEL) - v12
 - laravel/prompts (PROMPTS) - v0
+- livewire/flux (FLUXUI_FREE) - v2
+- livewire/livewire (LIVEWIRE) - v3
+- livewire/volt (VOLT) - v1
+- larastan/larastan (LARASTAN) - v3
 - laravel/mcp (MCP) - v0
 - laravel/pint (PINT) - v1
 - laravel/sail (SAIL) - v1
-- phpunit/phpunit (PHPUNIT) - v11
+- pestphp/pest (PEST) - v4
+- phpunit/phpunit (PHPUNIT) - v12
+- rector/rector (RECTOR) - v2
 - tailwindcss (TAILWINDCSS) - v4
 
 ## Conventions
@@ -74,6 +81,125 @@ This application is a Laravel application and its main Laravel ecosystems packag
 4. Mixed Queries - query=middleware "rate limit" - "middleware" AND exact phrase "rate limit".
 5. Multiple Queries - queries=["authentication", "middleware"] - ANY of these terms.
 
+=== playwright rules ===
+
+## Playwright MCP (Frontend Validation)
+
+- Playwright MCP is a browser automation server that allows you to visually validate frontend changes, interact with the UI, and catch regressions.
+- Use Playwright MCP to verify frontend changes work correctly before marking tasks complete.
+- Combine with Boost's `get-absolute-url` tool to navigate to the correct project URLs.
+
+## When to Use Playwright MCP
+
+- After implementing or modifying Flux UI components
+- When debugging visual, layout, or interaction issues
+- To verify forms submit correctly and display proper validation errors
+- Before completing frontend tasks to visually confirm the result
+- When the user reports a visual bug or unexpected behavior
+- To check for JavaScript console errors after changes
+
+## Key Tools
+
+| Tool | Purpose |
+|------|---------|
+| `browser_navigate` | Navigate to a URL |
+| `browser_snapshot` | Get accessibility tree of the page (preferred for understanding structure) |
+| `browser_take_screenshot` | Capture visual screenshot for confirmation |
+| `browser_fill_form` | Fill multiple form fields at once |
+| `browser_click` | Click buttons, links, and interactive elements |
+| `browser_type` | Type text into input fields |
+| `browser_console_messages` | Check for JavaScript errors |
+| `browser_network_requests` | Monitor API calls and responses |
+| `browser_wait_for` | Wait for text to appear or disappear |
+
+## Recommended Workflow
+
+1. Get the correct URL using Boost's `get-absolute-url` tool
+2. Navigate to the page using `browser_navigate`
+3. Take a `browser_snapshot` to understand the page structure
+4. Interact with forms using `browser_fill_form` or `browser_click`/`browser_type`
+5. Check `browser_console_messages` for JavaScript errors
+6. Take a screenshot with `browser_take_screenshot` if visual confirmation is needed
+
+## Selecting Elements
+
+- Playwright MCP uses element references from `browser_snapshot` output
+- The snapshot returns an accessibility tree with `ref` identifiers for each element
+- Always take a snapshot first, then use the `ref` values for interactions
+- Prefer elements with `data-test` attributes for stable selectors
+
+## Form Validation Workflow
+
+When testing forms with Flux components:
+
+1. Navigate to the form page
+2. Take a snapshot to identify form fields
+3. Use `browser_fill_form` to fill fields with test data
+4. Click the submit button
+5. Take another snapshot to check for validation errors or success states
+6. Verify the expected outcome (redirect, success message, or error display)
+
+<code-snippet name="Form Testing Workflow Example" lang="text">
+1. get-absolute-url: { "route": "register" }
+   → Returns: https://laravel-agentic.test/register
+
+2. browser_navigate: { "url": "https://laravel-agentic.test/register" }
+   → Opens the registration page
+
+3. browser_snapshot: {}
+   → Returns accessibility tree with form field refs
+
+4. browser_fill_form: {
+     "fields": [
+       { "name": "Name", "type": "textbox", "ref": "name-input", "value": "Test User" },
+       { "name": "Email", "type": "textbox", "ref": "email-input", "value": "test@example.com" },
+       { "name": "Password", "type": "textbox", "ref": "password-input", "value": "password123" }
+     ]
+   }
+   → Fills all form fields
+
+5. browser_click: { "element": "Submit button", "ref": "submit-btn" }
+   → Submits the form
+
+6. browser_console_messages: { "level": "error" }
+   → Check for any JavaScript errors
+</code-snippet>
+
+## Debugging JavaScript Issues
+
+- Use `browser_console_messages` with `level: "error"` to find JavaScript errors
+- Use `browser_console_messages` with `level: "warning"` to find potential issues
+- Network failures appear in `browser_network_requests` output
+- Check for failed requests or unexpected response codes
+
+## E2E Test Conventions
+
+- E2E tests live in `tests/E2E/`
+- Test files use the `.spec.ts` extension
+- Use `data-test` attributes for stable element selection (already used in auth views: `data-test="login-button"`, `data-test="logout-button"`)
+- Run E2E tests with `npx playwright test`
+
+### Adding data-test Attributes
+
+When creating new interactive elements, add `data-test` attributes for stable test selection:
+
+<code-snippet name="Adding data-test Attributes" lang="blade">
+<flux:button
+    variant="primary"
+    type="submit"
+    data-test="create-post-button"
+>
+    {{ __('Create Post') }}
+</flux:button>
+</code-snippet>
+
+## Screenshot Best Practices
+
+- Use screenshots sparingly—`browser_snapshot` is usually sufficient
+- Screenshots are useful for visual regression or layout verification
+- Save screenshots with descriptive filenames when debugging
+- Screenshots cannot be used for element selection—always use `browser_snapshot` for interactions
+
 === php rules ===
 
 ## PHP
@@ -105,6 +231,13 @@ protected function isAccessible(User $user, ?string $path = null): bool
 ## Enums
 - Typically, keys in an Enum should be TitleCase. For example: `FavoritePerson`, `BestLake`, `Monthly`.
 
+=== tests rules ===
+
+## Test Enforcement
+
+- Every change must be programmatically tested. Write a new test or update an existing test, then run the affected tests to make sure they pass.
+- Run the minimum number of tests needed to ensure code quality and speed. Use `php artisan test --compact` with a specific filename or filter.
+
 === laravel/core rules ===
 
 ## Do Things the Laravel Way
@@ -127,15 +260,8 @@ protected function isAccessible(User $user, ?string $path = null): bool
 - For APIs, default to using Eloquent API Resources and API versioning unless existing API routes do not, then you should follow existing application convention.
 
 ### Controllers & Validation
-- This application uses Livewire for interactive UI. Livewire components handle validation internally.
-- For Livewire components, use `$this->validate()` or `#[Validate]` attributes on properties.
-- For traditional controllers (APIs, non-Livewire pages), use Form Request classes for validation.
-
-### Actions Pattern
-- Use Action classes for business logic. Create with `php artisan make:action CreateUserAction`.
-- Actions have a single `handle()` method and live in `app/Actions/`.
-- Livewire components and controllers should delegate complex logic to Actions.
-- Keep Livewire components thin - they handle UI state and validation, not business logic.
+- Always create Form Request classes for validation rather than inline validation in controllers. Include both validation rules and custom error messages.
+- Check sibling Form Requests to see if the application uses array or string based validation rules.
 
 ### Queues
 - Use queued jobs for time-consuming operations with the `ShouldQueue` interface.
@@ -153,7 +279,6 @@ protected function isAccessible(User $user, ?string $path = null): bool
 - When creating models for tests, use the factories for the models. Check if the factory has custom states that can be used before manually setting up the model.
 - Faker: Use methods such as `$this->faker->word()` or `fake()->randomDigit()`. Follow existing conventions whether to use `$this->faker` or `fake()`.
 - When creating tests, make use of `php artisan make:test [options] {name}` to create a feature test, and pass `--unit` to create a unit test. Most tests should be feature tests.
-- Run `./vendor/bin/pest --filter=arch` after implementing code - architecture tests enforce Laravel patterns with detailed fix instructions.
 
 ### Vite Error
 - If you receive an "Illuminate\Foundation\ViteException: Unable to locate file in Vite manifest" error, you can run `npm run build` or ask the user to run `npm run dev` or `composer run dev`.
@@ -180,26 +305,233 @@ protected function isAccessible(User $user, ?string $path = null): bool
 ### Models
 - Casts can and likely should be set in a `casts()` method on a model rather than the `$casts` property. Follow existing conventions from other models.
 
+=== fluxui-free/core rules ===
+
+## Flux UI Free
+
+- This project is using the free edition of Flux UI. It has full access to the free components and variants, but does not have access to the Pro components.
+- Flux UI is a component library for Livewire. Flux is a robust, hand-crafted UI component library for your Livewire applications. It's built using Tailwind CSS and provides a set of components that are easy to use and customize.
+- You should use Flux UI components when available.
+- Fallback to standard Blade components if Flux is unavailable.
+- If available, use the `search-docs` tool to get the exact documentation and code snippets available for this project.
+- Flux UI components look like this:
+
+<code-snippet name="Flux UI Component Example" lang="blade">
+    <flux:button variant="primary"/>
+</code-snippet>
+
+### Available Components
+This is correct as of Boost installation, but there may be additional components within the codebase.
+
+<available-flux-components>
+avatar, badge, brand, breadcrumbs, button, callout, checkbox, dropdown, field, heading, icon, input, modal, navbar, otp-input, profile, radio, select, separator, skeleton, switch, text, textarea, tooltip
+</available-flux-components>
+
 === livewire/core rules ===
 
 ## Livewire
 
-This application uses Livewire for interactive UI components. Livewire components are class-based and live in `app/Livewire/`.
+- Use the `search-docs` tool to find exact version-specific documentation for how to write Livewire and Livewire tests.
+- Use the `php artisan make:livewire [Posts\CreatePost]` Artisan command to create new components.
+- State should live on the server, with the UI reflecting it.
+- All Livewire requests hit the Laravel backend; they're like regular HTTP requests. Always validate form data and run authorization checks in Livewire actions.
 
-### Creating Components
-- Use `php artisan make:livewire ComponentName` to create new components.
-- For nested components: `php artisan make:livewire Settings/Profile`.
-- Do NOT use Volt (single-file components) - this project uses class-based components only.
+## Livewire Best Practices
+- Livewire components require a single root element.
+- Use `wire:loading` and `wire:dirty` for delightful loading states.
+- Add `wire:key` in loops:
 
-### Component Structure
-- Livewire components can be routed to directly: `Route::get('/profile', Profile::class)`.
-- Use `mount()` for initialization, public properties for state.
-- Validation uses `$this->validate()` or `#[Validate]` attributes.
+    ```blade
+    @foreach ($items as $item)
+        <div wire:key="item-{{ $item->id }}">
+            {{ $item->name }}
+        </div>
+    @endforeach
+    ```
 
-### Routing
-- Full-page Livewire components can be used directly in routes.
-- For complex pages, route to a Livewire component rather than a controller.
-- Routes must be named and must not use closures.
+- Prefer lifecycle hooks like `mount()`, `updatedFoo()` for initialization and reactive side effects:
+
+<code-snippet name="Lifecycle Hook Examples" lang="php">
+    public function mount(User $user) { $this->user = $user; }
+    public function updatedSearch() { $this->resetPage(); }
+</code-snippet>
+
+## Testing Livewire
+
+<code-snippet name="Example Livewire Component Test" lang="php">
+    Livewire::test(Counter::class)
+        ->assertSet('count', 0)
+        ->call('increment')
+        ->assertSet('count', 1)
+        ->assertSee(1)
+        ->assertStatus(200);
+</code-snippet>
+
+<code-snippet name="Testing Livewire Component Exists on Page" lang="php">
+    $this->get('/posts/create')
+    ->assertSeeLivewire(CreatePost::class);
+</code-snippet>
+
+=== livewire/v3 rules ===
+
+## Livewire 3
+
+### Key Changes From Livewire 2
+- These things changed in Livewire 3, but may not have been updated in this application. Verify this application's setup to ensure you conform with application conventions.
+    - Use `wire:model.live` for real-time updates, `wire:model` is now deferred by default.
+    - Components now use the `App\Livewire` namespace (not `App\Http\Livewire`).
+    - Use `$this->dispatch()` to dispatch events (not `emit` or `dispatchBrowserEvent`).
+    - Use the `components.layouts.app` view as the typical layout path (not `layouts.app`).
+
+### New Directives
+- `wire:show`, `wire:transition`, `wire:cloak`, `wire:offline`, `wire:target` are available for use. Use the documentation to find usage examples.
+
+### Alpine
+- Alpine is now included with Livewire; don't manually include Alpine.js.
+- Plugins included with Alpine: persist, intersect, collapse, and focus.
+
+### Lifecycle Hooks
+- You can listen for `livewire:init` to hook into Livewire initialization, and `fail.status === 419` for the page expiring:
+
+<code-snippet name="Livewire Init Hook Example" lang="js">
+document.addEventListener('livewire:init', function () {
+    Livewire.hook('request', ({ fail }) => {
+        if (fail && fail.status === 419) {
+            alert('Your session expired');
+        }
+    });
+
+    Livewire.hook('message.failed', (message, component) => {
+        console.error(message);
+    });
+});
+</code-snippet>
+
+=== volt/core rules ===
+
+## Livewire Volt
+
+- This project uses Livewire Volt for interactivity within its pages. New pages requiring interactivity must also use Livewire Volt.
+- Make new Volt components using `php artisan make:volt [name] [--test] [--pest]`.
+- Volt is a class-based and functional API for Livewire that supports single-file components, allowing a component's PHP logic and Blade templates to coexist in the same file.
+- Livewire Volt allows PHP logic and Blade templates in one file. Components use the `@volt` directive.
+- You must check existing Volt components to determine if they're functional or class-based. If you can't detect that, ask the user which they prefer before writing a Volt component.
+
+### Volt Functional Component Example
+
+<code-snippet name="Volt Functional Component Example" lang="php">
+@volt
+<?php
+use function Livewire\Volt\{state, computed};
+
+state(['count' => 0]);
+
+$increment = fn () => $this->count++;
+$decrement = fn () => $this->count--;
+
+$double = computed(fn () => $this->count * 2);
+?>
+
+<div>
+    <h1>Count: {{ $count }}</h1>
+    <h2>Double: {{ $this->double }}</h2>
+    <button wire:click="increment">+</button>
+    <button wire:click="decrement">-</button>
+</div>
+@endvolt
+</code-snippet>
+
+### Volt Class Based Component Example
+To get started, define an anonymous class that extends Livewire\Volt\Component. Within the class, you may utilize all of the features of Livewire using traditional Livewire syntax:
+
+<code-snippet name="Volt Class-based Volt Component Example" lang="php">
+use Livewire\Volt\Component;
+
+new class extends Component {
+    public $count = 0;
+
+    public function increment()
+    {
+        $this->count++;
+    }
+} ?>
+
+<div>
+    <h1>{{ $count }}</h1>
+    <button wire:click="increment">+</button>
+</div>
+</code-snippet>
+
+### Testing Volt & Volt Components
+- Use the existing directory for tests if it already exists. Otherwise, fallback to `tests/Feature/Volt`.
+
+<code-snippet name="Livewire Test Example" lang="php">
+use Livewire\Volt\Volt;
+
+test('counter increments', function () {
+    Volt::test('counter')
+        ->assertSee('Count: 0')
+        ->call('increment')
+        ->assertSee('Count: 1');
+});
+</code-snippet>
+
+<code-snippet name="Volt Component Test Using Pest" lang="php">
+declare(strict_types=1);
+
+use App\Models\{User, Product};
+use Livewire\Volt\Volt;
+
+test('product form creates product', function () {
+    $user = User::factory()->create();
+
+    Volt::test('pages.products.create')
+        ->actingAs($user)
+        ->set('form.name', 'Test Product')
+        ->set('form.description', 'Test Description')
+        ->set('form.price', 99.99)
+        ->call('create')
+        ->assertHasNoErrors();
+
+    expect(Product::where('name', 'Test Product')->exists())->toBeTrue();
+});
+</code-snippet>
+
+### Common Patterns
+
+<code-snippet name="CRUD With Volt" lang="php">
+<?php
+
+use App\Models\Product;
+use function Livewire\Volt\{state, computed};
+
+state(['editing' => null, 'search' => '']);
+
+$products = computed(fn() => Product::when($this->search,
+    fn($q) => $q->where('name', 'like', "%{$this->search}%")
+)->get());
+
+$edit = fn(Product $product) => $this->editing = $product->id;
+$delete = fn(Product $product) => $product->delete();
+
+?>
+
+<!-- HTML / UI Here -->
+</code-snippet>
+
+<code-snippet name="Real-Time Search With Volt" lang="php">
+    <flux:input
+        wire:model.live.debounce.300ms="search"
+        placeholder="Search..."
+    />
+</code-snippet>
+
+<code-snippet name="Loading States With Volt" lang="php">
+    <flux:button wire:click="save" wire:loading.attr="disabled">
+        <span wire:loading.remove>Save</span>
+        <span wire:loading>Saving...</span>
+    </flux:button>
+</code-snippet>
 
 === pint/core rules ===
 
@@ -210,25 +542,99 @@ This application uses Livewire for interactive UI components. Livewire component
 
 === pest/core rules ===
 
-## Pest Testing Framework
+## Pest
+### Testing
+- If you need to verify a feature is working, write or update a Unit / Feature test.
 
-- This application uses Pest for testing. Use `php artisan make:test {name}` to create a new test.
-- Every time a test has been updated, run that singular test.
-- When the tests relating to your feature are passing, ask the user if they would like to also run the entire test suite to make sure everything is still passing.
+### Pest Tests
+- All tests must be written using Pest. Use `php artisan make:test --pest {name}`.
+- You must not remove any tests or test files from the tests directory without approval. These are not temporary or helper files - these are core to the application.
 - Tests should test all of the happy paths, failure paths, and weird paths.
-- You must not remove any tests or test files from the tests directory without approval. These are not temporary or helper files; these are core to the application.
+- Tests live in the `tests/Feature` and `tests/Unit` directories.
+- Pest tests look and behave like this:
+<code-snippet name="Basic Pest Test Example" lang="php">
+it('is true', function () {
+    expect(true)->toBeTrue();
+});
+</code-snippet>
 
 ### Running Tests
-- Run the minimal number of tests, using an appropriate filter, before finalizing.
+- Run the minimal number of tests using an appropriate filter before finalizing code edits.
 - To run all tests: `php artisan test --compact`.
 - To run all tests in a file: `php artisan test --compact tests/Feature/ExampleTest.php`.
 - To filter on a particular test name: `php artisan test --compact --filter=testName` (recommended after making a change to a related file).
-- Run `composer polish` to run the full quality suite (Pint, PHPStan, Pest, Playwright).
+- When the tests relating to your changes are passing, ask the user if they would like to run the entire test suite to ensure everything is still passing.
 
-### Architecture Tests
-- Architecture tests in `tests/Architecture/ArchitectureTest.php` enforce Laravel patterns.
-- Run `./vendor/bin/pest --filter=arch` after implementing code - violations provide detailed fix instructions.
-- These tests are guardrails for AI agents to ensure consistent patterns.
+### Pest Assertions
+- When asserting status codes on a response, use the specific method like `assertForbidden` and `assertNotFound` instead of using `assertStatus(403)` or similar, e.g.:
+<code-snippet name="Pest Example Asserting postJson Response" lang="php">
+it('returns all', function () {
+    $response = $this->postJson('/api/docs', []);
+
+    $response->assertSuccessful();
+});
+</code-snippet>
+
+### Mocking
+- Mocking can be very helpful when appropriate.
+- When mocking, you can use the `Pest\Laravel\mock` Pest function, but always import it via `use function Pest\Laravel\mock;` before using it. Alternatively, you can use `$this->mock()` if existing tests do.
+- You can also create partial mocks using the same import or self method.
+
+### Datasets
+- Use datasets in Pest to simplify tests that have a lot of duplicated data. This is often the case when testing validation rules, so consider this solution when writing tests for validation rules.
+
+<code-snippet name="Pest Dataset Example" lang="php">
+it('has emails', function (string $email) {
+    expect($email)->not->toBeEmpty();
+})->with([
+    'james' => 'james@laravel.com',
+    'taylor' => 'taylor@laravel.com',
+]);
+</code-snippet>
+
+=== pest/v4 rules ===
+
+## Pest 4
+
+- Pest 4 is a huge upgrade to Pest and offers: browser testing, smoke testing, visual regression testing, test sharding, and faster type coverage.
+- Browser testing is incredibly powerful and useful for this project.
+- Browser tests should live in `tests/Browser/`.
+- Use the `search-docs` tool for detailed guidance on utilizing these features.
+
+### Browser Testing
+- You can use Laravel features like `Event::fake()`, `assertAuthenticated()`, and model factories within Pest 4 browser tests, as well as `RefreshDatabase` (when needed) to ensure a clean state for each test.
+- Interact with the page (click, type, scroll, select, submit, drag-and-drop, touch gestures, etc.) when appropriate to complete the test.
+- If requested, test on multiple browsers (Chrome, Firefox, Safari).
+- If requested, test on different devices and viewports (like iPhone 14 Pro, tablets, or custom breakpoints).
+- Switch color schemes (light/dark mode) when appropriate.
+- Take screenshots or pause tests for debugging when appropriate.
+
+### Example Tests
+
+<code-snippet name="Pest Browser Test Example" lang="php">
+it('may reset the password', function () {
+    Notification::fake();
+
+    $this->actingAs(User::factory()->create());
+
+    $page = visit('/sign-in'); // Visit on a real browser...
+
+    $page->assertSee('Sign In')
+        ->assertNoJavascriptErrors() // or ->assertNoConsoleLogs()
+        ->click('Forgot Password?')
+        ->fill('email', 'nuno@laravel.com')
+        ->click('Send Reset Link')
+        ->assertSee('We have emailed your password reset link!')
+
+    Notification::assertSent(ResetPassword::class);
+});
+</code-snippet>
+
+<code-snippet name="Pest Smoke Testing Example" lang="php">
+$pages = visit(['/', '/about', '/contact']);
+
+$pages->assertNoJavascriptErrors()->assertNoConsoleLogs();
+</code-snippet>
 
 === tailwindcss/core rules ===
 
@@ -252,38 +658,6 @@ This application uses Livewire for interactive UI components. Livewire component
 
 ### Dark Mode
 - If existing pages and components support dark mode, new pages and components must support dark mode in a similar way, typically using `dark:`.
-
-=== beads/core rules ===
-
-## Beads Task Tracking
-
-This project uses [Beads](https://github.com/steveyegge/beads) for persistent task tracking. Tasks are stored in `.beads/` as JSONL files and versioned with git.
-
-### When to Create Tasks
-- Before starting multi-step work, create tasks to track progress
-- Break complex features into smaller, actionable tasks
-- Create tasks for follow-up work discovered during implementation
-
-### Key Commands
-```bash
-bd ready                     # Show tasks ready to work on (no blockers)
-bd create "Task title"       # Create a new task
-bd show <id>                 # View task details
-bd close <id>                # Mark task complete
-bd dep add <child> <parent>  # Add dependency (child blocked by parent)
-bd list                      # List all tasks
-bd sync                      # Sync with git (run before pushing)
-```
-
-### Task Workflow
-1. Check `bd ready` to see available work
-2. Work on a ready task
-3. Mark complete with `bd close <id>`
-4. Create new tasks for discovered work
-5. Run `bd sync` before `git push`
-
-### Task IDs
-Tasks have hash-based IDs like `bd-a1b2`. These prevent merge conflicts when multiple agents work simultaneously.
 
 === tailwindcss/v4 rules ===
 

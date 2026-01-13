@@ -46,6 +46,15 @@ bd dep add <child> <parent>         # Add dependency between tasks
 
 ## AI-Specific Design
 
-- **AGENTS.md**: Primary guidelines covering PHP conventions, Laravel patterns, and Laravel Boost MCP tools
+- **AGENTS.md**: Primary guidelines covering PHP conventions, Laravel patterns, MCP tools (Laravel Boost + Playwright), and frontend validation workflows
 - **Architecture tests**: Run `./vendor/bin/pest --filter=arch` after implementing code - violations provide detailed fix instructions
 - **Beads**: Git-backed task tracking for AI agents (`.beads/` directory)
+
+## MCP Servers
+
+This project uses two MCP servers for enhanced AI assistance:
+
+- **Laravel Boost**: `search-docs`, `tinker`, `database-query`, `get-absolute-url`, `browser-logs`
+- **Playwright**: `browser_navigate`, `browser_snapshot`, `browser_take_screenshot`, `browser_fill_form`, `browser_console_messages`
+
+See AGENTS.md for detailed usage guidance on both.
