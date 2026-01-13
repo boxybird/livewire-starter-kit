@@ -27,8 +27,6 @@ pest()->extend(Tests\TestCase::class)
 
 require __DIR__.'/Arch/Expectations/ToOnlyHaveCruddyMethods.php';
 require __DIR__.'/Arch/Expectations/ToBeValidAction.php';
-require __DIR__.'/Arch/Expectations/ToUseActionsInControllers.php';
-require __DIR__.'/Arch/Expectations/ToBeValidFormRequest.php';
 require __DIR__.'/Arch/Expectations/ToBeValidModel.php';
 require __DIR__.'/Arch/Expectations/ToBeValidJob.php';
 require __DIR__.'/Arch/Expectations/ToBeValidEvent.php';
@@ -52,7 +50,6 @@ require __DIR__.'/Arch/Expectations/ToNotUseVolt.php';
 
 require __DIR__.'/Arch/Presets/Cruddy.php';
 require __DIR__.'/Arch/Presets/Actions.php';
-require __DIR__.'/Arch/Presets/FormRequests.php';
 require __DIR__.'/Arch/Presets/Models.php';
 require __DIR__.'/Arch/Presets/Jobs.php';
 require __DIR__.'/Arch/Presets/Events.php';

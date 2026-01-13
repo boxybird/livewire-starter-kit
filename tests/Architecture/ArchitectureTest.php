@@ -3,7 +3,6 @@
 arch()->preset()->laravel();
 arch()->preset()->cruddy();
 arch()->preset()->actions();
-arch()->preset()->formRequests();
 arch()->preset()->models();
 arch()->preset()->jobs();
 arch()->preset()->events();
