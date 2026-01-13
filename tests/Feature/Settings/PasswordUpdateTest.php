@@ -1,8 +1,9 @@
 <?php
 
+use App\Livewire\Settings\Password;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
-use Livewire\Volt\Volt;
+use Livewire\Livewire;
 
 test('password can be updated', function () {
     $user = User::factory()->create([
@@ -11,7 +12,7 @@ test('password can be updated', function () {
 
     $this->actingAs($user);
 
-    $response = Volt::test('settings.password')
+    $response = Livewire::test(Password::class)
         ->set('current_password', 'password')
         ->set('password', 'new-password')
         ->set('password_confirmation', 'new-password')
@@ -29,7 +30,7 @@ test('correct password must be provided to update password', function () {
 
     $this->actingAs($user);
 
-    $response = Volt::test('settings.password')
+    $response = Livewire::test(Password::class)
         ->set('current_password', 'wrong-password')
         ->set('password', 'new-password')
         ->set('password_confirmation', 'new-password')
