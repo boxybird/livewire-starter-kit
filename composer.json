@@ -67,7 +67,7 @@
         "polish": [
             "@php artisan config:clear --ansi",
             "pint",
-            "vendor/bin/phpstan analyse --memory-limit=512M",
+            "vendor/bin/phpstan analyse",
             "@php artisan test",
             "npx playwright test"
         ],
