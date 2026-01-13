@@ -25,6 +25,7 @@ expect()->extend('toBeValidCommand', function () {
         'Notify', 'Dispatch', 'Publish', 'Fetch', 'Calculate', 'Validate',
         'Check', 'Refresh', 'Clear', 'Cache', 'Queue', 'Schedule', 'Migrate',
         'Seed', 'Install', 'Setup', 'Configure', 'Reset', 'Restore', 'Backup',
+        'Make',
     ];
 
     $objects = ObjectsRepository::getInstance()->allByNamespace($namespace);

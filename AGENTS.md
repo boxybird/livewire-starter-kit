@@ -127,8 +127,15 @@ protected function isAccessible(User $user, ?string $path = null): bool
 - For APIs, default to using Eloquent API Resources and API versioning unless existing API routes do not, then you should follow existing application convention.
 
 ### Controllers & Validation
-- Always create Form Request classes for validation rather than inline validation in controllers. Include both validation rules and custom error messages.
-- Check sibling Form Requests to see if the application uses array or string based validation rules.
+- This application uses Livewire for interactive UI. Livewire components handle validation internally.
+- For Livewire components, use `$this->validate()` or `#[Validate]` attributes on properties.
+- For traditional controllers (APIs, non-Livewire pages), use Form Request classes for validation.
+
+### Actions Pattern
+- Use Action classes for business logic. Create with `php artisan make:action CreateUserAction`.
+- Actions have a single `handle()` method and live in `app/Actions/`.
+- Livewire components and controllers should delegate complex logic to Actions.
+- Keep Livewire components thin - they handle UI state and validation, not business logic.
 
 ### Queues
 - Use queued jobs for time-consuming operations with the `ShouldQueue` interface.
@@ -173,6 +180,27 @@ protected function isAccessible(User $user, ?string $path = null): bool
 ### Models
 - Casts can and likely should be set in a `casts()` method on a model rather than the `$casts` property. Follow existing conventions from other models.
 
+=== livewire/core rules ===
+
+## Livewire
+
+This application uses Livewire for interactive UI components. Livewire components are class-based and live in `app/Livewire/`.
+
+### Creating Components
+- Use `php artisan make:livewire ComponentName` to create new components.
+- For nested components: `php artisan make:livewire Settings/Profile`.
+- Do NOT use Volt (single-file components) - this project uses class-based components only.
+
+### Component Structure
+- Livewire components can be routed to directly: `Route::get('/profile', Profile::class)`.
+- Use `mount()` for initialization, public properties for state.
+- Validation uses `$this->validate()` or `#[Validate]` attributes.
+
+### Routing
+- Full-page Livewire components can be used directly in routes.
+- For complex pages, route to a Livewire component rather than a controller.
+- Routes must be named and must not use closures.
+
 === pint/core rules ===
 
 ## Laravel Pint Code Formatter
@@ -180,12 +208,11 @@ protected function isAccessible(User $user, ?string $path = null): bool
 - You must run `vendor/bin/pint --dirty` before finalizing changes to ensure your code matches the project's expected style.
 - Do not run `vendor/bin/pint --test`, simply run `vendor/bin/pint` to fix any formatting issues.
 
-=== phpunit/core rules ===
+=== pest/core rules ===
 
-## PHPUnit
+## Pest Testing Framework
 
-- This application uses PHPUnit for testing. All tests must be written as PHPUnit classes. Use `php artisan make:test --phpunit {name}` to create a new test.
-- If you see a test using "Pest", convert it to PHPUnit.
+- This application uses Pest for testing. Use `php artisan make:test {name}` to create a new test.
 - Every time a test has been updated, run that singular test.
 - When the tests relating to your feature are passing, ask the user if they would like to also run the entire test suite to make sure everything is still passing.
 - Tests should test all of the happy paths, failure paths, and weird paths.
@@ -196,6 +223,12 @@ protected function isAccessible(User $user, ?string $path = null): bool
 - To run all tests: `php artisan test --compact`.
 - To run all tests in a file: `php artisan test --compact tests/Feature/ExampleTest.php`.
 - To filter on a particular test name: `php artisan test --compact --filter=testName` (recommended after making a change to a related file).
+- Run `composer polish` to run the full quality suite (Pint, PHPStan, Pest, Playwright).
+
+### Architecture Tests
+- Architecture tests in `tests/Architecture/ArchitectureTest.php` enforce Laravel patterns.
+- Run `./vendor/bin/pest --filter=arch` after implementing code - violations provide detailed fix instructions.
+- These tests are guardrails for AI agents to ensure consistent patterns.
 
 === tailwindcss/core rules ===
 
