@@ -38,6 +38,7 @@ require __DIR__.'/Arch/Expectations/ToBeValidCommand.php';
 require __DIR__.'/Arch/Expectations/ToBeValidResource.php';
 require __DIR__.'/Arch/Expectations/ToBeValidObserver.php';
 require __DIR__.'/Arch/Expectations/ToNotUseVolt.php';
+require __DIR__.'/Arch/Expectations/ToUseDependencyInjection.php';
 
 /*
 |--------------------------------------------------------------------------
@@ -60,6 +61,7 @@ require __DIR__.'/Arch/Presets/Commands.php';
 require __DIR__.'/Arch/Presets/Resources.php';
 require __DIR__.'/Arch/Presets/Observers.php';
 require __DIR__.'/Arch/Presets/NoVolt.php';
+require __DIR__.'/Arch/Presets/Livewire.php';
 
 /*
 |--------------------------------------------------------------------------

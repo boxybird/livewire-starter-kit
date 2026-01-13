@@ -13,3 +13,4 @@ arch()->preset()->commands();
 arch()->preset()->resources();
 arch()->preset()->observers();
 arch()->preset()->noVolt();
+arch()->preset()->livewire();

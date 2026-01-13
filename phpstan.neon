@@ -37,6 +37,7 @@ parameters:
         - '#Call to an undefined method Pest\\Expectation<.*>::toBeValidResource\(\)#'
         - '#Call to an undefined method Pest\\Expectation<.*>::toBeValidObserver\(\)#'
         - '#Call to an undefined method Pest\\Expectation<.*>::toNotUseVolt\(\)#'
+        - '#Call to an undefined method Pest\\Expectation<.*>::toUseDependencyInjection\(\)#'
         - '#Call to an undefined method Pest\\PendingCalls\\TestCall::preset\(\)#'
         # Laravel factory return type compatibility
         - '#Return type \(array<string, mixed>\) of method Database\\Factories\\.*::definition\(\) should be compatible#'
