@@ -1,0 +1,43 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - app/
+        - config/
+        - database/
+        - routes/
+        - tests/
+
+    level: 5
+
+    universalObjectCratesClasses:
+        - PHPUnit\Framework\TestCase
+
+    databaseMigrationsPath:
+        - database/migrations
+
+    checkModelProperties: true
+
+    ignoreErrors:
+        - '#Call to an undefined method PHPUnit\\Framework\\TestCase::(get|getJson|post|postJson|put|putJson|patch|patchJson|delete|deleteJson|actingAs|withSession|withoutMiddleware|from|assertDatabaseHas|assertDatabaseMissing|assertSoftDeleted|assertAuthenticated|assertGuest|artisan|mock|partialMock|spy)\(\)#'
+        # Pest expect()->extend() closures use $this which PHPStan doesn't understand
+        - '#Undefined variable: \$this#'
+        # Pest architecture testing custom expectations
+        - '#Call to an undefined method Pest\\Expectation<.*>::toOnlyHaveCruddyMethods\(\)#'
+        - '#Call to an undefined method Pest\\Expectation<.*>::toBeValidAction\(\)#'
+        - '#Call to an undefined method Pest\\Expectation<.*>::toUseActionsInMutationMethods\(\)#'
+        - '#Call to an undefined method Pest\\Expectation<.*>::toBeValidFormRequest\(\)#'
+        - '#Call to an undefined method Pest\\Expectation<.*>::toBeValidModel\(\)#'
+        - '#Call to an undefined method Pest\\Expectation<.*>::toBeValidJob\(\)#'
+        - '#Call to an undefined method Pest\\Expectation<.*>::toBeValidEvent\(\)#'
+        - '#Call to an undefined method Pest\\Expectation<.*>::toBeValidListener\(\)#'
+        - '#Call to an undefined method Pest\\Expectation<.*>::toBeValidMiddleware\(\)#'
+        - '#Call to an undefined method Pest\\Expectation<.*>::toBeValidPolicy\(\)#'
+        - '#Call to an undefined method Pest\\Expectation<.*>::toBeValidServiceProvider\(\)#'
+        - '#Call to an undefined method Pest\\Expectation<.*>::toBeValidCommand\(\)#'
+        - '#Call to an undefined method Pest\\Expectation<.*>::toBeValidResource\(\)#'
+        - '#Call to an undefined method Pest\\Expectation<.*>::toBeValidObserver\(\)#'
+        - '#Call to an undefined method Pest\\PendingCalls\\TestCall::preset\(\)#'
+        # Laravel factory return type compatibility
+        - '#Return type \(array<string, mixed>\) of method Database\\Factories\\.*::definition\(\) should be compatible#'
